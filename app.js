@@ -1,4 +1,5 @@
 const express = require('express');
+const {Column} = require('./models/column');
 const {Task} = require('./models/task');
 const {Subtask} = require('./models/subtask');
 
@@ -21,11 +22,32 @@ app.get('/', (req, res) => {
     const task = new Task({
         title: 'Finish the app',
         description: 'A fullstack  app for resume',
-        subtasks:  subTasksList
+        subtasks:  subTasksList,
+        status: 'Todo'
     });
 
+    const task2 = new Task({
+        title: 'Read a book',
+        description: 'read Sense and Sensibility',
+        subtasks:  subTasksList,
+        status: 'Doing'
+    });
+
+    const tasksList = [];
+    tasksList.push(task);
+    tasksList.push(task2);
+
     
-    console.log(task);
+    const column = new Column({
+        title: 'this is a column',
+        tasks: tasksList,
+        numOfTasks: tasksList.length
+
+    });
+
+    console.log(column);
+    console.log(column.tasks);
+    console.log(column.tasks[0].subtasks);
   })
   
   app.listen(port, () => {
