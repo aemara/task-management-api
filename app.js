@@ -1,4 +1,5 @@
 const express = require('express');
+const {Board} = require('./models/board');
 const {Column} = require('./models/column');
 const {Task} = require('./models/task');
 const {Subtask} = require('./models/subtask');
@@ -45,9 +46,20 @@ app.get('/', (req, res) => {
 
     });
 
+    const columnsList = [];
+    columnsList.push(column);
+
     console.log(column);
     console.log(column.tasks);
     console.log(column.tasks[0].subtasks);
+
+    const board = new Board({
+        title: 'This is a board',
+        columns: columnsList
+    });
+
+    console.log(board);
+    
   })
   
   app.listen(port, () => {
