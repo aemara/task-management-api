@@ -21,6 +21,11 @@ mongoose
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
+
+/**
+ * 
+ * A POST endpoint for adding a board
+ */
 app.post("/addboard", (req, res) => {
   const board = new Board({
     title: req.body.title,
