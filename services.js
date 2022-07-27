@@ -9,4 +9,10 @@ const findBoard = async (boardId) => {
     return board;
 }
 
+const findColumn = async (columnId) => {
+    const column = await Column.findById(columnId);
+    return column;
+}
+
 module.exports.findBoard = findBoard;
+module.exports.findColumn = findColumn;
