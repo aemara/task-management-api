@@ -1,7 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require('body-parser');
-
+const {findBoard} = require('./services');
 const { Board } = require("./models/board");
 const { Column } = require("./models/column");
 const { Task } = require("./models/task");
@@ -32,6 +32,27 @@ app.post("/addboard", (req, res) => {
     res.status(201).json({
         message: "A board was added successfully."
     })
+});
+
+app.post("/addcolumn/:boardId", (req, res) => {
+  const boardId = req.params["boardId"];
+  const column = new Column({
+    title: req.body.title,
+    numOfTasks: 0,
+    tasks: []
+  });
+  column.save();
+  const board = {};
+
+  findBoard(boardId).then((board) => {
+    board = board;
+    board.columns.push(column);
+    board.save();
+  });
+
+  res.status(201).json({
+    message: "A board was found and a column was added",
+  });
 });
 
 app.listen(port, () => {
