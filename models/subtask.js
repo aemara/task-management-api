@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 
 const subtaskSchema = mongoose.Schema({
   name: { type: String, required: true },
-  taskId: { type: Number, required: true },
 });
 const subtaskModel = mongoose.model("Subtask", subtaskSchema);
 

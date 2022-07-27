@@ -5,7 +5,6 @@ const columnSchema = mongoose.Schema({
   title: { type: String, required: true },
   numOfTasks: { type: Number, required: true },
   tasks: { type: [taskSchema] },
-  boardId: { type: Number, required: true },
 });
 
 const columnModel = mongoose.model("Column", columnSchema);
