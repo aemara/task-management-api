@@ -33,6 +33,10 @@ app.post("/addboard", (req, res) => {
   });
 });
 
+/**
+ * 
+ * A POST endpoint for adding a column to a board
+ */
 app.post("/addcolumn/:boardId", (req, res) => {
   const boardId = req.params["boardId"];
   const column = new Column({
