@@ -3,7 +3,7 @@ const { taskSchema } = require("./task");
 
 const columnSchema = mongoose.Schema({
   title: { type: String, required: true },
-  numOfTasks: { type: Number, required: true },
+  numOfTasks: { type: Number},
   tasks: { type: [taskSchema] },
 });
 
