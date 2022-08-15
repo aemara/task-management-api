@@ -142,15 +142,15 @@ app.get("/board/:id", (req, res) => {
 app.put("/editboard/:id", (req, res) => {
   const updatedBoard = {
     title: req.body.title,
-    columns: req.body.columns
-  } 
+    columns: req.body.columns,
+  };
 
-  Board.updateOne({_id: req.params['id']}, updatedBoard, (err, result) => {
+  Board.updateOne({ _id: req.params["id"] }, updatedBoard, (err, result) => {
     res.status(200).json({
       message: "Board was updated successfully",
-      result: result
-    })
-  })
+      result: result,
+    });
+  });
 });
 
 app.listen(port, () => {
