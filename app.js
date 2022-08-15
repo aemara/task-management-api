@@ -78,31 +78,61 @@ app.post("/addcolumn/:boardId", (req, res) => {
 /**
  * A POST endpoint for adding a task to a column
  */
-app.post("/addtask/:columnId", (req, res) => {
+app.post("/addtask/:columnName/:columnId", (req, res) => {
   const columnId = req.params["columnId"];
-  const column = {};
-
-  const subtasks = [];
-  req.body.subtasks.forEach((subtask) => {
-    const newSubtask = new Subtask({
-      name: subtask.name,
-    });
-    newSubtask.save();
-    subtasks.push(newSubtask);
-  });
+  const columnName = req.params['columnName'];
 
   const task = new Task({
     title: req.body.title,
     description: req.body.description,
-    subtasks: subtasks,
-    status: req.body.status,
+    status: columnName,
+    subtasks: req.body.subtasks,
+    columnId: columnId,
   });
-  task.save();
+
+  let taskId;
+  task.save((err, document) => {
+    taskId = document._id;
+  });
+
+  const subtasks = [];
+  if (req.body.subtasks.length > 0) {
+    req.body.subtasks.forEach((subtask) => {
+      const newSubtask = new Subtask({
+        name: subtask.name,
+        taskId: document._id,
+      });
+      newSubtask.save();
+      subtasks.push(newSubtask);
+    });
+    const task = new Task({
+      title: req.body.title,
+      description: req.body.description,
+      status: columnName,
+      subtasks: req.body.subtasks,
+      columnId: columnId,
+    });
+    task.subtasks = subtasks;
+    task.save();
+  }
 
   findColumn(columnId).then((column) => {
+    /**reflect changes in the column collection */
     column = column;
     column.tasks.push(task);
     column.save();
+
+    /**reflect changes in the board collection */
+    findBoard(column.boardId).then(board => {
+      console.log(board);
+      board.columns.forEach(column => {
+        if(column._id.toString() === columnId) {
+          console.log("found our column");
+          column.tasks.push(task);
+          board.save();
+        }
+      })
+    })
   });
 
   res.status(201).json({
