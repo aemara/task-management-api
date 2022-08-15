@@ -1,3 +1,4 @@
+const cors = require('cors');
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
@@ -18,6 +19,7 @@ mongoose
   .then(() => console.log("Database is connected."))
   .catch(() => console.log("Connection failed."));
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -99,6 +101,36 @@ app.post("/addtask/:columnId", (req, res) => {
   });
 });
 
+
+/**
+ * GET endpoint for fetching all boards
+ */
+app.get('/boards', (req, res, next) => {
+    Board.find().then(boards => {
+       res.status(200).json({
+        message: "Boards fetched successfully!",
+        boards: boards,
+       })
+    })
+})
+
+
+/**
+ * GET endpoint for fetching a board with a specific id 
+ */
+app.get('/board/:id', (req, res) => {
+    if(req.params['id'] === '-1') {
+        Board.find().sort({ _id: -1 }).limit(1).then(board  => {
+            res.status(200).json({
+                message: "Board was fetched successfully",
+                board: board,
+            })
+        })
+    }
+})
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
+
+
