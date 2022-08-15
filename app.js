@@ -1,4 +1,4 @@
-const cors = require('cors');
+const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
@@ -23,9 +23,8 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
-
 /**
- * 
+ *
  * A POST endpoint for adding a board
  */
 app.post("/addboard", (req, res) => {
@@ -41,7 +40,7 @@ app.post("/addboard", (req, res) => {
 });
 
 /**
- * 
+ *
  * A POST endpoint for adding a column to a board
  */
 app.post("/addcolumn/:boardId", (req, res) => {
@@ -64,7 +63,6 @@ app.post("/addcolumn/:boardId", (req, res) => {
     message: "A board was found and a column was added",
   });
 });
-
 
 /**
  * A POST endpoint for adding a task to a column
@@ -101,43 +99,60 @@ app.post("/addtask/:columnId", (req, res) => {
   });
 });
 
-
 /**
  * GET endpoint for fetching all boards
  */
-app.get('/boards', (req, res, next) => {
-    Board.find().then(boards => {
-       res.status(200).json({
-        message: "Boards fetched successfully!",
-        boards: boards,
-       })
-    })
-})
-
+app.get("/boards", (req, res, next) => {
+  Board.find().then((boards) => {
+    res.status(200).json({
+      message: "Boards fetched successfully!",
+      boards: boards,
+    });
+  });
+});
 
 /**
- * GET endpoint for fetching a board with a specific id 
+ * GET endpoint for fetching a board with a specific id
  */
-app.get('/board/:id', (req, res) => {
-    if(req.params['id'] === '-1') {
-        Board.find().sort({ _id: -1 }).limit(1).then(board  => {
-            res.status(200).json({
-                message: "Board was fetched successfully",
-                board: board,
-            })
-        })
-    } else {
-      Board.findById(req.params['id'], (err, board) => {
+app.get("/board/:id", (req, res) => {
+  if (req.params["id"] === "-1") {
+    Board.find()
+      .sort({ _id: -1 })
+      .limit(1)
+      .then((board) => {
         res.status(200).json({
           message: "Board was fetched successfully",
-          board: board
-        })
-      })
-    }
-})
+          board: board,
+        });
+      });
+  } else {
+    Board.findById(req.params["id"], (err, board) => {
+      res.status(200).json({
+        message: "Board was fetched successfully",
+        board: board,
+      });
+    });
+  }
+});
+
+/**
+ * PUT endpoint for updating a board
+ */
+
+app.put("/editboard/:id", (req, res) => {
+  const updatedBoard = {
+    title: req.body.title,
+    columns: req.body.columns
+  } 
+
+  Board.updateOne({_id: req.params['id']}, updatedBoard, (err, result) => {
+    res.status(200).json({
+      message: "Board was updated successfully",
+      result: result
+    })
+  })
+});
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
-
-
