@@ -33,7 +33,19 @@ app.post("/addboard", (req, res) => {
     columns: req.body.columns,
   });
 
-  board.save();
+  board.save((err, document) => {
+    if (board.columns.length > 0) {
+      board.columns.forEach((column) => {
+        const newColumn = new Column({
+          title: column.title,
+          tasks: column.tasks,
+          boardId: document._id,
+        });
+
+        newColumn.save();
+      });
+    }
+  });
   res.status(201).json({
     message: "A board was added successfully.",
   });
