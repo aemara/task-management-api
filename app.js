@@ -59,8 +59,7 @@ app.post("/addcolumn/:boardId", (req, res) => {
   const boardId = req.params["boardId"];
   const column = new Column({
     title: req.body.title,
-    numOfTasks: 0,
-    tasks: [],
+    boardId: boardId,
   });
   column.save();
   const board = {};
