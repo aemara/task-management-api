@@ -6,7 +6,7 @@ const taskSchema = mongoose.Schema({
   description: { type: String, required: true },
   subtasks: { type: [subtaskSchema] },
   status: { type: String, required: true },
-  columnId: { type: Number },
+  columnId: { type: String },
 });
 
 const taskModel = mongoose.model("Task", taskSchema);
