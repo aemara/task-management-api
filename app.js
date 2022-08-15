@@ -80,7 +80,7 @@ app.post("/addcolumn/:boardId", (req, res) => {
  */
 app.post("/addtask/:columnName/:columnId", (req, res) => {
   const columnId = req.params["columnId"];
-  const columnName = req.params['columnName'];
+  const columnName = req.params["columnName"];
 
   const task = new Task({
     title: req.body.title,
@@ -123,16 +123,16 @@ app.post("/addtask/:columnName/:columnId", (req, res) => {
     column.save();
 
     /**reflect changes in the board collection */
-    findBoard(column.boardId).then(board => {
+    findBoard(column.boardId).then((board) => {
       console.log(board);
-      board.columns.forEach(column => {
-        if(column._id.toString() === columnId) {
+      board.columns.forEach((column) => {
+        if (column._id.toString() === columnId) {
           console.log("found our column");
           column.tasks.push(task);
           board.save();
         }
-      })
-    })
+      });
+    });
   });
 
   res.status(201).json({
