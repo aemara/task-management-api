@@ -126,6 +126,13 @@ app.get('/board/:id', (req, res) => {
                 board: board,
             })
         })
+    } else {
+      Board.findById(req.params['id'], (err, board) => {
+        res.status(200).json({
+          message: "Board was fetched successfully",
+          board: board
+        })
+      })
     }
 })
 
