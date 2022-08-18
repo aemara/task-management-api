@@ -30,15 +30,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.post("/addboard", (req, res) => {
   const board = new Board({
     title: req.body.title,
-    columns: req.body.columns,
   });
 
   board.save((err, document) => {
-    if (board.columns.length > 0) {
-      board.columns.forEach((column) => {
+    if (req.body.columns.length > 0) {
+      req.body.columns.forEach((column) => {
         const newColumn = new Column({
           title: column.title,
-          tasks: column.tasks,
           boardId: document._id,
         });
 
