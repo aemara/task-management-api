@@ -3,7 +3,6 @@ const { taskSchema } = require("./task");
 
 const columnSchema = mongoose.Schema({
   title: { type: String, required: true },
-  tasks: { type: [taskSchema] },
   boardId: { type: String },
 });
 
