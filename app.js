@@ -60,14 +60,7 @@ app.post("/addcolumn/:boardId", (req, res) => {
     boardId: boardId,
   });
   column.save();
-  const board = {};
-
-  findBoard(boardId).then((board) => {
-    board = board;
-    board.columns.push(column);
-    board.save();
-  });
-
+ 
   res.status(201).json({
     message: "A board was found and a column was added",
   });
@@ -83,55 +76,22 @@ app.post("/addtask/:columnName/:columnId", (req, res) => {
   const task = new Task({
     title: req.body.title,
     description: req.body.description,
-    status: columnName,
-    subtasks: req.body.subtasks,
+    column: columnName,
     columnId: columnId,
   });
 
-  let taskId;
+
   task.save((err, document) => {
-    taskId = document._id;
-  });
-
-  const subtasks = [];
-  if (req.body.subtasks.length > 0) {
-    req.body.subtasks.forEach((subtask) => {
-      const newSubtask = new Subtask({
-        name: subtask.name,
-        taskId: document._id,
+    if (req.body.subtasks.length > 0) {
+      req.body.subtasks.forEach((subtask) => {
+        const newSubtask = new Subtask({
+          name: subtask.name,
+          taskId: document._id,
+        });
+        newSubtask.save();
       });
-      newSubtask.save();
-      subtasks.push(newSubtask);
-    });
-    const task = new Task({
-      title: req.body.title,
-      description: req.body.description,
-      status: columnName,
-      subtasks: req.body.subtasks,
-      columnId: columnId,
-    });
-    task.subtasks = subtasks;
-    task.save();
-  }
-
-  findColumn(columnId).then((column) => {
-    /**reflect changes in the column collection */
-    column = column;
-    column.tasks.push(task);
-    column.save();
-
-    /**reflect changes in the board collection */
-    findBoard(column.boardId).then((board) => {
-      console.log(board);
-      board.columns.forEach((column) => {
-        if (column._id.toString() === columnId) {
-          console.log("found our column");
-          column.tasks.push(task);
-          board.save();
-        }
-      });
-    });
-  });
+  };
+})
 
   res.status(201).json({
     message: "A column was found and a task was added",
