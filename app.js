@@ -60,7 +60,7 @@ app.post("/addcolumn/:boardId", (req, res) => {
     boardId: boardId,
   });
   column.save();
- 
+
   res.status(201).json({
     message: "A board was found and a column was added",
   });
@@ -80,20 +80,20 @@ app.post("/addtask/:columnName/:columnId", (req, res) => {
     columnId: columnId,
   });
 
-
   task.save((err, document) => {
     if (req.body.subtasks.length > 0) {
       req.body.subtasks.forEach((subtask) => {
         const newSubtask = new Subtask({
           name: subtask.name,
           taskId: document._id,
+          columnId: columnId,
         });
         newSubtask.save();
       });
-  };
-})
+    }
+  });
 
-  res.status(201).json({
+  res.status(200).json({
     message: "A column was found and a task was added",
   });
 });
@@ -141,14 +141,37 @@ app.get("/board/:id", (req, res) => {
 app.put("/editboard/:id", (req, res) => {
   const updatedBoard = {
     title: req.body.title,
-    columns: req.body.columns,
   };
 
+  const columns = req.body.columns;
+  const deletedColumnsIds = req.body.deletedColumns;
   Board.updateOne({ _id: req.params["id"] }, updatedBoard, (err, result) => {
-    res.status(200).json({
-      message: "Board was updated successfully",
-      result: result,
-    });
+    if (result.acknowledged) {
+      columns.forEach((column) => {
+        const updatedColumn = { title: column.name };
+        Column.updateOne(
+          { _id: column.columnId },
+          updatedColumn,
+          (err, result) => {}
+        );
+      });
+
+      /**If there are columns to be deleted, delete theirs tasks and subtasks */
+      if (deletedColumnsIds.length > 0) {
+        deletedColumnsIds.forEach((id) => {
+          Column.findOneAndDelete({ _id: id }, function (err, column) {});
+          Task.find({ columnId: id }, (err, tasks) => {
+            tasks.forEach((task) => task.remove());
+          });
+          Subtask.find({columnId: id}, (err, subtasks) => {
+            subtasks.forEach(subtask => subtask.remove());
+          })
+        });
+      }
+      res.status(200).json({
+        message: "Board was updated successfully",
+      });
+    }
   });
 });
 
