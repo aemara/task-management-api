@@ -156,22 +156,68 @@ app.put("/editboard/:id", (req, res) => {
         );
       });
 
-      /**If there are columns to be deleted, delete theirs tasks and subtasks */
       if (deletedColumnsIds.length > 0) {
         deletedColumnsIds.forEach((id) => {
           Column.findOneAndDelete({ _id: id }, function (err, column) {});
           Task.find({ columnId: id }, (err, tasks) => {
             tasks.forEach((task) => task.remove());
           });
-          Subtask.find({columnId: id}, (err, subtasks) => {
-            subtasks.forEach(subtask => subtask.remove());
-          })
+          Subtask.find({ columnId: id }, (err, subtasks) => {
+            subtasks.forEach((subtask) => subtask.remove());
+          });
         });
       }
+
       res.status(200).json({
         message: "Board was updated successfully",
       });
     }
+  });
+});
+
+/**
+ * PUT endpoint to update a task
+ */
+
+app.put("/edittask/:id", (req, res) => {
+  /**
+   * Finding column name to add it to updatedTask
+   */
+  let columnName;
+  Column.findById(req.body.columnId, (err, column) => {
+    columnName = column.title;
+  });
+
+  const updatedTask = {
+    title: req.body.title,
+    description: req.body.description,
+    column: columnName,
+  };
+
+  const subtasks = req.body.subtasks;
+  const deletedSubtasksIds = req.body.deletedSubtasks;
+
+  Task.updateOne({ _id: req.params["id"] }, updatedTask, (err, result) => {
+    if (result.acknowledged) {
+      subtasks.forEach((subtask) => {
+        const updatedSubtask = { name: subtask.name };
+        Subtask.updateOne(
+          { _id: subtask.subtaskId },
+          updatedSubtask,
+          (err, result) => {}
+        );
+      });
+    }
+
+    if (deletedSubtasksIds.length > 0) {
+      deletedSubtasksIds.forEach((id) => {
+        Subtask.findOneAndDelete({ _id: id }, function (err, subtask) {});
+      });
+    }
+  });
+
+  res.status(200).json({
+    message: "Task was editing successfully",
   });
 });
 
