@@ -182,11 +182,13 @@ app.put("/editboard/:id", (req, res) => {
  */
 
 app.put("/edittask/:id", (req, res) => {
+  const columnId = req.body.columnId;
+  const taskId = req.params["id"];
   /**
    * Finding column name to add it to updatedTask
    */
   let columnName;
-  Column.findById(req.body.columnId, (err, column) => {
+  Column.findById(columnId, (err, column) => {
     columnName = column.title;
   });
 
@@ -199,14 +201,20 @@ app.put("/edittask/:id", (req, res) => {
   const subtasks = req.body.subtasks;
   const deletedSubtasksIds = req.body.deletedSubtasks;
 
-  Task.updateOne({ _id: req.params["id"] }, updatedTask, (err, result) => {
+  Task.updateOne({ _id: taskId }, updatedTask, (err, result) => {
     if (result.acknowledged) {
       subtasks.forEach((subtask) => {
-        const updatedSubtask = { name: subtask.name };
-        Subtask.updateOne(
+        const updatedSubtask = {
+          name: subtask.name,
+          taskId: taskId,
+          columnId: columnId,
+          done: subtask.done,
+        };
+        Subtask.findOneAndUpdate(
           { _id: subtask.subtaskId },
           updatedSubtask,
-          (err, result) => {}
+          { upsert: true },
+          (result) => {}
         );
       });
     }
