@@ -6,7 +6,7 @@ const taskSchema = mongoose.Schema({
   description: { type: String, required: true },
   column: { type: String, required: true },
   columnId: { type: String },
-  done: { type: Boolean },
+  done: { type: Boolean, default: false },
 });
 
 const taskModel = mongoose.model("Task", taskSchema);
