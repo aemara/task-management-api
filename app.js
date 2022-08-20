@@ -231,6 +231,26 @@ app.put("/edittask/:id", (req, res) => {
   });
 });
 
+/**
+ * PUT endpoint for toggling the 'done' status of a subtask
+ */
+
+app.put("/toggledone/:id", (req, res) => {
+  const subtaskId = req.params["id"];
+  Subtask.findOne({ _id: subtaskId }, (err, subtask) => {
+    if (subtask.done) {
+      subtask.done = false;
+    } else {
+      subtask.done = true;
+    }
+    subtask.save();
+
+    res.status(200).json({
+      message: "Toggle was successful",
+    });
+  });
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
