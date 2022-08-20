@@ -251,6 +251,29 @@ app.put("/toggledone/:id", (req, res) => {
   });
 });
 
+/**
+ * PUT endpoint for changing the column of a task
+ */
+
+app.put("/changecolumn/:taskId/:newColumnId", (req, res) => {
+  const taskId = req.params["taskId"];
+  const newColumnId = req.params["newColumnId"];
+  let newColumnName;
+  Column.findOne({ _id: newColumnId }, (err, column) => {
+    newColumnName = column.title;
+  });
+
+  Task.findOne({ _id: taskId }, (err, task) => {
+    task.columnId = newColumnId;
+    task.column = newColumnName;
+    task.save();
+
+    res.status(200).json({
+      message: "Column was changed successfully",
+    });
+  });
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
