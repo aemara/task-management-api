@@ -78,6 +78,7 @@ app.post("/addtask/:columnName/:columnId", (req, res) => {
     description: req.body.description,
     column: columnName,
     columnId: columnId,
+    done: false,
   });
 
   task.save((err, document) => {
@@ -87,6 +88,7 @@ app.post("/addtask/:columnName/:columnId", (req, res) => {
           name: subtask.name,
           taskId: document._id,
           columnId: columnId,
+          done: false,
         });
         newSubtask.save();
       });
