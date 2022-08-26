@@ -117,10 +117,23 @@ app.get("/boards", (req, res, next) => {
  */
 
 app.get("/columns/:boardId", (req, res) => {
-  Column.find({boardId: req.params["boardId"]}).then((columns) => {
+  Column.find({ boardId: req.params["boardId"] }).then((columns) => {
     res.status(200).json({
       message: "Columns fetched successfully",
       columns: columns,
+    });
+  });
+});
+
+/**
+ * GET endpoint for fetching tasks of a column
+ */
+
+app.get("/tasks/:columnId", (req, res) => {
+  Task.find({ columnId: req.params["columnId"] }).then((tasks) => {
+    res.status(200).json({
+      message: "Tasks fetched successfully",
+      tasks: tasks,
     });
   });
 });
