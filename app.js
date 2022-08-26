@@ -113,6 +113,19 @@ app.get("/boards", (req, res, next) => {
 });
 
 /**
+ * GET endpoint for fetching all columns
+ */
+
+app.get("/columns/:boardId", (req, res) => {
+  Column.find({boardId: req.params["boardId"]}).then((columns) => {
+    res.status(200).json({
+      message: "Columns fetched successfully",
+      columns: columns,
+    });
+  });
+});
+
+/**
  * GET endpoint for fetching a board with a specific id
  */
 app.get("/board/:id", (req, res) => {
