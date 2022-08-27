@@ -139,6 +139,19 @@ app.get("/tasks/:columnId", (req, res) => {
 });
 
 /**
+ * GET endpoint for fetching subtasks of a task
+ */
+
+app.get("/subtasks/:taskId", (req, res) => {
+  Subtask.find({ taskId: req.params["taskId"] }).then((subtasks) => {
+    res.status(200).json({
+      message: "Subtasks fetched successfully",
+      subtasks: subtasks,
+    });
+  });
+});
+
+/**
  * GET endpoint for fetching a board with a specific id
  */
 app.get("/board/:id", (req, res) => {
