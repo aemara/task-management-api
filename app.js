@@ -139,6 +139,19 @@ app.get("/tasks/:columnId", (req, res) => {
 });
 
 /**
+ * GET endpoint for fetching a task
+ */
+
+app.get("/task/:taskId", (req, res) => {
+  Task.find({ _id: req.params["taskId"] }).then((task) => {
+    res.status(200).json({
+      message: "Task fetched successfully",
+      task: task,
+    });
+  });
+});
+
+/**
  * GET endpoint for fetching subtasks of a task
  */
 
