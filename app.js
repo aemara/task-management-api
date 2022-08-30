@@ -32,21 +32,15 @@ app.post("/addboard", (req, res) => {
     title: req.body.title,
   });
 
+  let boardId;
   board.save((err, document) => {
-    if (req.body.columns.length > 0) {
-      req.body.columns.forEach((column) => {
-        const newColumn = new Column({
-          title: column.title,
-          boardId: document._id,
-        });
-
-        newColumn.save();
-      });
-    }
+    boardId = document._id.toString();
+    res.status(200).json({
+      message: "A board was added successfully.",
+      boardId: boardId,
+    });
   });
-  res.status(201).json({
-    message: "A board was added successfully.",
-  });
+  
 });
 
 /**
