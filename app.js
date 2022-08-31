@@ -40,7 +40,6 @@ app.post("/addboard", (req, res) => {
       boardId: boardId,
     });
   });
-  
 });
 
 /**
@@ -331,6 +330,20 @@ app.put("/changecolumn/:taskId/:newColumnId", (req, res) => {
       message: "Column was changed successfully",
     });
   });
+});
+
+/**
+ * DELETE endpoint for removing a board
+ */
+
+app.delete("/removeboard/:boardId", (req, res) => {
+  const boardId = req.params["boardId"];
+  Board.findById(boardId, (err, board) => {
+    board.remove();
+    res.status(200).json({
+      message: "Board was removed successfully"
+    })
+  })
 });
 
 app.listen(port, () => {
