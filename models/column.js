@@ -3,7 +3,7 @@ const { taskSchema } = require("./task");
 
 const columnSchema = mongoose.Schema({
   title: { type: String, required: true },
-  boardId: { type: String },
+  board: { type: mongoose.Types.ObjectId, ref: "Board" },
 });
 
 const columnModel = mongoose.model("Column", columnSchema);

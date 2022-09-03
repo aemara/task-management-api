@@ -4,8 +4,7 @@ const { subtaskSchema } = require("./subtask");
 const taskSchema = mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  column: { type: String, required: true },
-  columnId: { type: String },
+  column: { type: mongoose.Types.ObjectId, ref: "Column" },
   done: { type: Boolean, default: false },
 });
 
