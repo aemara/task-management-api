@@ -50,46 +50,49 @@ app.post("/addcolumn/:boardId", (req, res) => {
   const boardId = req.params["boardId"];
   const column = new Column({
     title: req.body.title,
-    boardId: boardId,
   });
-  column.save();
 
-  res.status(201).json({
-    message: "A board was found and a column was added",
+  Board.findById(boardId, (err, board) => {
+    column.save();
+    board.columns.push(column);
+    board.save();
+    console.log(board.columns[5].title);
+    res.status(201).json({
+      message: "A board was found and a column was added",
+    });
   });
 });
 
 /**
  * A POST endpoint for adding a task to a column
  */
-app.post("/addtask/:columnName/:columnId", (req, res) => {
+app.post("/addtask/:columnId", (req, res) => {
   const columnId = req.params["columnId"];
-  const columnName = req.params["columnName"];
 
   const task = new Task({
     title: req.body.title,
     description: req.body.description,
-    column: columnName,
-    columnId: columnId,
-    done: false,
   });
 
-  task.save((err, document) => {
-    if (req.body.subtasks.length > 0) {
-      req.body.subtasks.forEach((subtask) => {
-        const newSubtask = new Subtask({
-          name: subtask.name,
-          taskId: document._id,
-          columnId: columnId,
-          done: false,
-        });
-        newSubtask.save();
+  if (req.body.subtasks.length > 0) {
+    req.body.subtasks.forEach((subtask) => {
+      const newSubtask = new Subtask({
+        name: subtask.name,
       });
-    }
-  });
+      newSubtask.save(); /**Here we add the subtask document to its own collection */
+      task.subtasks.push(newSubtask); /**Then we add it to its task */   
+    });
+  }
 
-  res.status(200).json({
-    message: "A column was found and a task was added",
+  task.save();
+
+  /** Now we add the task to the column */
+  Column.findById(columnId, (err, column) => {
+    column.tasks.push(task);
+    column.save();
+    res.status(200).json({
+      message: "A column was found and a task was added",
+    });
   });
 });
 
@@ -185,12 +188,18 @@ app.get("/board/:id", (req, res) => {
         });
       });
   } else {
-    Board.findById(req.params["id"], (err, board) => {
-      res.status(200).json({
-        message: "Board was fetched successfully",
-        board: board,
+    /**Recursively populating the Board document */
+    Board.findById(req.params["id"])
+      .populate({
+        path: 'columns',
+        populate: {path: 'tasks', populate: {path: 'subtasks'}}
+      })
+      .exec((err, board) => {
+        res.status(200).json({
+          message: "Board was fetched successfully",
+          board: board,
+        });
       });
-    });
   }
 });
 
@@ -341,9 +350,9 @@ app.delete("/removeboard/:boardId", (req, res) => {
   Board.findById(boardId, (err, board) => {
     board.remove();
     res.status(200).json({
-      message: "Board was removed successfully"
-    })
-  })
+      message: "Board was removed successfully",
+    });
+  });
 });
 
 app.listen(port, () => {
