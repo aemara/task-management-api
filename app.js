@@ -32,12 +32,9 @@ app.post("/addboard", (req, res) => {
     title: req.body.title,
   });
 
-  let boardId;
   board.save((err, document) => {
-    boardId = document._id.toString();
     res.status(200).json({
       message: "A board was added successfully.",
-      boardId: boardId,
     });
   });
 });
@@ -56,7 +53,6 @@ app.post("/addcolumn/:boardId", (req, res) => {
     column.save();
     board.columns.push(column);
     board.save();
-    console.log(board.columns[5].title);
     res.status(201).json({
       message: "A board was found and a column was added",
     });
@@ -80,13 +76,13 @@ app.post("/addtask/:columnId", (req, res) => {
         name: subtask.name,
       });
       newSubtask.save(); /**Here we add the subtask document to its own collection */
-      task.subtasks.push(newSubtask); /**Then we add it to its task */   
+      task.subtasks.push(newSubtask); /**Then we add it to its task */
     });
   }
 
-  task.save();
+  task.save(); /**Then we add the task to its collection */
 
-  /** Now we add the task to the column */
+  /** Now we add the task to the column and add the column to its collection */
   Column.findById(columnId, (err, column) => {
     column.tasks.push(task);
     column.save();
@@ -97,7 +93,9 @@ app.post("/addtask/:columnId", (req, res) => {
 });
 
 /**
- * GET endpoint for fetching all boards
+ * GET endpoint for fetching all boards.
+ *
+ * This endpoint returns only the titles of the boards
  */
 app.get("/boards", (req, res, next) => {
   Board.find().then((boards) => {
@@ -106,6 +104,43 @@ app.get("/boards", (req, res, next) => {
       boards: boards,
     });
   });
+});
+
+/**
+ * GET endpoint for fetching a board with a specific id
+ *
+ * This endpoint returns a board document populated with its columns documents, its tasks, and its subtasks.
+ */
+app.get("/board/:id", (req, res) => {
+  if (req.params["id"] === "-1") {
+    /**The following statement returns the last added board */
+    Board.find()
+      .sort({ _id: -1 })
+      .limit(1)
+      .populate({
+        path: "columns",
+        populate: { path: "tasks", populate: { path: "subtasks" } },
+      })
+      .exec((err, board) => {
+        res.status(200).json({
+          message: "Board was fetched successfully",
+          board: board,
+        });
+      });
+  } else {
+    /**Recursively populating the Board document */
+    Board.findById(req.params["id"])
+      .populate({
+        path: "columns",
+        populate: { path: "tasks", populate: { path: "subtasks" } },
+      })
+      .exec((err, board) => {
+        res.status(200).json({
+          message: "Board was fetched successfully",
+          board: board,
+        });
+      });
+  }
 });
 
 /**
@@ -171,36 +206,6 @@ app.get("/subtasks/:taskId", (req, res) => {
       subtasks: subtasks,
     });
   });
-});
-
-/**
- * GET endpoint for fetching a board with a specific id
- */
-app.get("/board/:id", (req, res) => {
-  if (req.params["id"] === "-1") {
-    Board.find()
-      .sort({ _id: -1 })
-      .limit(1)
-      .then((board) => {
-        res.status(200).json({
-          message: "Board was fetched successfully",
-          board: board,
-        });
-      });
-  } else {
-    /**Recursively populating the Board document */
-    Board.findById(req.params["id"])
-      .populate({
-        path: 'columns',
-        populate: {path: 'tasks', populate: {path: 'subtasks'}}
-      })
-      .exec((err, board) => {
-        res.status(200).json({
-          message: "Board was fetched successfully",
-          board: board,
-        });
-      });
-  }
 });
 
 /**
