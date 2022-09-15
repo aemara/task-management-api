@@ -153,16 +153,20 @@ app.get("/board/:id", (req, res) => {
 });
 
 /**
- * GET endpoint for fetching all columns
+ * GET endpoint for fetching the columns of a board
  */
 
 app.get("/columns/:boardId", (req, res) => {
-  Column.find({ boardId: req.params["boardId"] }).then((columns) => {
-    res.status(200).json({
-      message: "Columns fetched successfully",
-      columns: columns,
+  Board.findById(req.params["boardId"])
+    .populate({
+      path: "columns",
+    })
+    .exec((err, board) => {
+      res.status(200).json({
+        message: "Board was fetched successfully",
+        columns: board.columns,
+      });
     });
-  });
 });
 
 /**
