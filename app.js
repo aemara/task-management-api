@@ -32,9 +32,18 @@ app.post("/addboard", (req, res) => {
     title: req.body.title,
   });
 
+  if (req.body.columns) {
+    req.body.columns.forEach((column) => {
+      const newColumn = new Column({ title: column.title });
+      newColumn.save();
+      board.columns.push(newColumn);
+    });
+  }
+
   board.save((err, document) => {
     res.status(200).json({
       message: "A board was added successfully.",
+      boardId: document._id,
     });
   });
 });
@@ -183,16 +192,18 @@ app.get("/tasks/:columnId", (req, res) => {
 });
 
 /**
- * GET endpoint for fetching a task
+ * GET endpoint for fetching a task populated with its subtasks
  */
 
 app.get("/task/:taskId", (req, res) => {
-  Task.find({ _id: req.params["taskId"] }).then((task) => {
-    res.status(200).json({
-      message: "Task fetched successfully",
-      task: task,
+  Task.find({ _id: req.params["taskId"] })
+    .populate({ path: "subtasks" })
+    .exec((err, task) => {
+      res.status(200).json({
+        message: "Task fetched successfully",
+        task: task,
+      });
     });
-  });
 });
 
 /**
