@@ -342,23 +342,33 @@ app.put("/toggledone/:id", (req, res) => {
  * PUT endpoint for changing the column of a task
  */
 
-app.put("/changecolumn/:taskId/:newColumnId", (req, res) => {
+app.put("/changecolumn/:taskId/:currentColumnId/:newColumnId", (req, res) => {
   const taskId = req.params["taskId"];
+  const currentColumnId = req.params["currentColumnId"];
   const newColumnId = req.params["newColumnId"];
-  let newColumnName;
-  Column.findOne({ _id: newColumnId }, (err, column) => {
-    newColumnName = column.title;
-  });
 
+  /**Remove the task from its current column*/
+  Column.findOne({ _id: currentColumnId })
+    .populate({ path: "tasks" })
+    .exec((err, column) => {
+      let filtered = column.tasks.filter(function (task, index, arr) {
+        return task._id === taskId;
+      });
+      column.tasks = filtered;
+      column.save();
+    });
+
+  /**Now we add the task to its new column */
   Task.findOne({ _id: taskId }, (err, task) => {
-    task.columnId = newColumnId;
-    task.column = newColumnName;
-    task.save();
-
-    res.status(200).json({
-      message: "Column was changed successfully",
+    Column.findOne({ _id: newColumnId }, (err, column) => {
+      column.tasks.push(task);
+      column.save();
     });
   });
+
+  res.status(200).json({
+    message: "update was successful",
+  })
 });
 
 /**
