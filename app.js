@@ -71,7 +71,7 @@ app.post("/addcolumn/:boardId", (req, res) => {
 /**
  * A POST endpoint for adding a task to a column
  */
-app.post("/addtask/:columnId", (req, res) => {
+app.post("/addtask/:columnId", async (req, res) => {
   const columnId = req.params["columnId"];
 
   const task = new Task({
@@ -80,16 +80,16 @@ app.post("/addtask/:columnId", (req, res) => {
   });
 
   if (req.body.subtasks.length > 0) {
-    req.body.subtasks.forEach((subtask) => {
+    req.body.subtasks.forEach(async (subtask) => {
       const newSubtask = new Subtask({
         name: subtask.name,
       });
-      newSubtask.save(); /**Here we add the subtask document to its own collection */
-      task.subtasks.push(newSubtask); /**Then we add it to its task */
+      await newSubtask.save(); /**Here we add the subtask document to its own collection */
+      await task.subtasks.push(newSubtask); /**Then we add it to its task */
     });
   }
 
-  task.save(); /**Then we add the task to its collection */
+  await task.save(); /**Then we add the task to its collection */
 
   /** Now we add the task to the column and add the column to its collection */
   Column.findById(columnId, (err, column) => {
@@ -352,23 +352,22 @@ app.put("/changecolumn/:taskId/:currentColumnId/:newColumnId", (req, res) => {
     .populate({ path: "tasks" })
     .exec((err, column) => {
       let filtered = column.tasks.filter(function (task, index, arr) {
-        return task._id === taskId;
+        return task._id != taskId;
       });
       column.tasks = filtered;
       column.save();
-    });
 
-  /**Now we add the task to its new column */
-  Task.findOne({ _id: taskId }, (err, task) => {
-    Column.findOne({ _id: newColumnId }, (err, column) => {
-      column.tasks.push(task);
-      column.save();
+      /**Now we add the task to its new column */
+      Task.findOne({ _id: taskId }, (err, task) => {
+        Column.findOne({ _id: newColumnId }, (err, column) => {
+          column.tasks.push(task);
+          column.save();
+          res.status(200).json({
+            message: "update was successful",
+          });
+        });
+      });
     });
-  });
-
-  res.status(200).json({
-    message: "update was successful",
-  })
 });
 
 /**
