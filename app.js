@@ -80,12 +80,12 @@ app.post("/addtask/:columnId", async (req, res) => {
   });
 
   if (req.body.subtasks.length > 0) {
-    req.body.subtasks.forEach(async (subtask) => {
+    req.body.subtasks.forEach((subtask) => {
       const newSubtask = new Subtask({
         name: subtask.name,
       });
-      await newSubtask.save(); /**Here we add the subtask document to its own collection */
-      await task.subtasks.push(newSubtask); /**Then we add it to its task */
+      newSubtask.save(); /**Here we add the subtask document to its own collection */
+      task.subtasks.push(newSubtask); /**Then we add it to its task */
     });
   }
 
