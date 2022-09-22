@@ -200,14 +200,20 @@ app.get("/tasks/:columnId", (req, res) => {
  */
 
 app.get("/task/:taskId", (req, res) => {
-  Task.find({ _id: req.params["taskId"] })
-    .populate({ path: "subtasks" })
-    .exec((err, task) => {
-      res.status(200).json({
-        message: "Task fetched successfully",
-        task: task,
-      });
+  // Task.find({ _id: req.params["taskId"] })
+  //   .populate({ path: "subtasks" })
+  //   .exec((err, task) => {
+  //     res.status(200).json({
+  //       message: "Task fetched successfully",
+  //       task: task,
+  //     });
+  //   });
+
+  Task.find({ _id: req.params["taskId"] }).then((doc) => {
+    res.status(200).json({
+      task: doc,
     });
+  });
 });
 
 /**
