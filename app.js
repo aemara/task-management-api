@@ -84,7 +84,6 @@ app.post("/addtask/:columnId", async (req, res) => {
       const newSubtask = new Subtask({
         name: subtask.name,
       });
-      newSubtask.save(); /**Here we add the subtask document to its own collection */
       task.subtasks.push(newSubtask); /**Then we add it to its task */
     });
   }
@@ -163,7 +162,7 @@ app.get("/columns/:boardId", (req, res) => {
     })
     .exec((err, board) => {
       res.status(200).json({
-        message: "Board was fetched successfully",
+        boardTitle: board.title,
         columns: board.columns,
       });
     });
@@ -196,19 +195,10 @@ app.get("/tasks/:columnId", (req, res) => {
 });
 
 /**
- * GET endpoint for fetching a task populated with its subtasks
+ * GET endpoint for fetching a task
  */
 
 app.get("/task/:taskId", (req, res) => {
-  // Task.find({ _id: req.params["taskId"] })
-  //   .populate({ path: "subtasks" })
-  //   .exec((err, task) => {
-  //     res.status(200).json({
-  //       message: "Task fetched successfully",
-  //       task: task,
-  //     });
-  //   });
-
   Task.find({ _id: req.params["taskId"] }).then((doc) => {
     res.status(200).json({
       task: doc,
@@ -233,94 +223,80 @@ app.get("/subtasks/:taskId", (req, res) => {
  * PUT endpoint for updating a board
  */
 
-app.put("/editboard/:id", (req, res) => {
-  const updatedBoard = {
-    title: req.body.title,
-  };
+app.put("/editboard/:id", async (req, res) => {
+  /**If there is a new board title */
+  if (req.body.title) {
+    const updatedBoard = { title: req.body.title };
+    await Board.findByIdAndUpdate(req.params["id"], updatedBoard);
+  }
 
-  const columns = req.body.columns;
-  const deletedColumnsIds = req.body.deletedColumns;
-  Board.updateOne({ _id: req.params["id"] }, updatedBoard, (err, result) => {
-    if (result.acknowledged) {
-      columns.forEach((column) => {
-        const updatedColumn = { title: column.name };
-        Column.updateOne(
-          { _id: column.columnId },
-          updatedColumn,
-          (err, result) => {}
-        );
-      });
+  /**If there are new titles for columns */
+  if (req.body.updatedColumns) {
+    req.body.updatedColumns.forEach(async (column) => {
+      const updatedColumn = { title: column.title };
+      await Column.findByIdAndUpdate(column.id, updatedColumn);
+    });
+  }
 
-      if (deletedColumnsIds.length > 0) {
-        deletedColumnsIds.forEach((id) => {
-          Column.findOneAndDelete({ _id: id }, function (err, column) {});
-          Task.find({ columnId: id }, (err, tasks) => {
-            tasks.forEach((task) => task.remove());
-          });
-          Subtask.find({ columnId: id }, (err, subtasks) => {
-            subtasks.forEach((subtask) => subtask.remove());
-          });
-        });
-      }
+  /**If there are new columns */
+  if (req.body.newColumns) {
+    req.body.newColumns.forEach(async (column) => {
+      const newColumn = new Column({ title: column.title });
+      await newColumn.save();
+      const board = await Board.findById(req.params["id"]);
+      board.columns.push(newColumn);
+      await board.save();
+    });
+  }
 
-      res.status(200).json({
-        message: "Board was updated successfully",
-      });
-    }
+  /**If there are columns to be deleted */
+  if (req.body.deletedColumns) {
+    req.body.deletedColumns.forEach(async (id) => {
+      await Column.findByIdAndDelete(id);
+    });
+  }
+
+  res.status(200).json({
+    message: "done",
   });
 });
 
 /**
- * PUT endpoint to update a task
+ * PUT endpoint for updating a task
  */
 
-app.put("/edittask/:id", (req, res) => {
-  const columnId = req.body.columnId;
-  const taskId = req.params["id"];
-  /**
-   * Finding column name to add it to updatedTask
-   */
-  let columnName;
-  Column.findById(columnId, (err, column) => {
-    columnName = column.title;
-  });
+app.put("/edittask/:taskId", async (req, res) => {
+  console.log(req.body);
 
-  const updatedTask = {
-    title: req.body.title,
-    description: req.body.description,
-    column: columnName,
-  };
+  const taskId = req.params["taskId"];
+  const task = await Task.findById(taskId);
+  task.title = req.body.newTitle;
+  task.description = req.body.newDescription;
+  task.subtasks = req.body.newSubtasks;
+  await task.save();
 
-  const subtasks = req.body.subtasks;
-  const deletedSubtasksIds = req.body.deletedSubtasks;
+  if (req.body.newColumnId) {
+    /**Remove the task from its current column*/
+    Column.findOne({ _id: req.body.currentColumnId })
+      .populate({ path: "tasks" })
+      .exec((err, column) => {
+        let filtered = column.tasks.filter(function (task, index, arr) {
+          return task._id != taskId;
+        });
+        column.tasks = filtered;
+        column.save();
 
-  Task.updateOne({ _id: taskId }, updatedTask, (err, result) => {
-    if (result.acknowledged) {
-      subtasks.forEach((subtask) => {
-        const updatedSubtask = {
-          name: subtask.name,
-          taskId: taskId,
-          columnId: columnId,
-          done: subtask.done,
-        };
-        Subtask.findOneAndUpdate(
-          { _id: subtask.subtaskId },
-          updatedSubtask,
-          { upsert: true },
-          (result) => {}
-        );
+        /**Now we add the task to its new column */
+        Task.findOne({ _id: taskId }, (err, task) => {
+          Column.findOne({ _id: req.body.newColumnId }, (err, column) => {
+            column.tasks.push(task);
+            column.save();
+          });
+        });
       });
-    }
-
-    if (deletedSubtasksIds.length > 0) {
-      deletedSubtasksIds.forEach((id) => {
-        Subtask.findOneAndDelete({ _id: id }, function (err, subtask) {});
-      });
-    }
-  });
-
+  }
   res.status(200).json({
-    message: "Task was editing successfully",
+    message: "Task updated successfully",
   });
 });
 
@@ -328,18 +304,23 @@ app.put("/edittask/:id", (req, res) => {
  * PUT endpoint for toggling the 'done' status of a subtask
  */
 
-app.put("/toggledone/:id", (req, res) => {
-  const subtaskId = req.params["id"];
-  Subtask.findOne({ _id: subtaskId }, (err, subtask) => {
-    if (subtask.done) {
-      subtask.done = false;
-    } else {
-      subtask.done = true;
-    }
-    subtask.save();
+app.put("/toggledone/:subtaskId/:taskId", (req, res) => {
+  const subtaskId = req.params["subtaskId"];
+  const taskId = req.params["taskId"];
 
+  Task.findOne({ _id: taskId }, (err, task) => {
+    task.subtasks.forEach((subtask) => {
+      if (subtask._id.toString() === subtaskId) {
+        if (subtask.done) {
+          subtask.done = false;
+        } else {
+          subtask.done = true;
+        }
+      }
+    });
+    task.save();
     res.status(200).json({
-      message: "Toggle was successful",
+      message: "Subtask's status changed",
     });
   });
 });
