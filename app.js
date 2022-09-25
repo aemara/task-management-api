@@ -223,36 +223,32 @@ app.get("/subtasks/:taskId", (req, res) => {
  * PUT endpoint for updating a board
  */
 
-app.put("/editboard/:id", async (req, res) => {
+app.put("/editboard/:id", (req, res) => {
   /**If there is a new board title */
   if (req.body.title) {
+    console.log(req.body.title);
     const updatedBoard = { title: req.body.title };
-    await Board.findByIdAndUpdate(req.params["id"], updatedBoard);
+    Board.findByIdAndUpdate(req.params["id"], updatedBoard).exec();
   }
 
-  /**If there are new titles for columns */
-  if (req.body.updatedColumns) {
-    req.body.updatedColumns.forEach(async (column) => {
-      const updatedColumn = { title: column.title };
-      await Column.findByIdAndUpdate(column.id, updatedColumn);
-    });
-  }
-
-  /**If there are new columns */
-  if (req.body.newColumns) {
-    req.body.newColumns.forEach(async (column) => {
-      const newColumn = new Column({ title: column.title });
-      await newColumn.save();
-      const board = await Board.findById(req.params["id"]);
-      board.columns.push(newColumn);
-      await board.save();
-    });
-  }
+  req.body.columns.forEach((column) => {
+    if (!column.columnId) {
+      const newColumn = new Column({ title: column.columnName });
+      newColumn.save();
+      Board.findById(req.params["id"], (err, board) => {
+        board.columns.push(newColumn);
+        board.save();
+      });
+    } else {
+      const updatedColumn = { title: column.columnName };
+      Column.findByIdAndUpdate(column.columnId, updatedColumn);
+    }
+  });
 
   /**If there are columns to be deleted */
   if (req.body.deletedColumns) {
-    req.body.deletedColumns.forEach(async (id) => {
-      await Column.findByIdAndDelete(id);
+    req.body.deletedColumns.forEach((id) => {
+      Column.findByIdAndDelete(id).exec();
     });
   }
 
@@ -266,8 +262,6 @@ app.put("/editboard/:id", async (req, res) => {
  */
 
 app.put("/edittask/:taskId", async (req, res) => {
-  console.log(req.body);
-
   const taskId = req.params["taskId"];
   const task = await Task.findById(taskId);
   task.title = req.body.newTitle;
