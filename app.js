@@ -355,12 +355,26 @@ app.put("/changecolumn/:taskId/:currentColumnId/:newColumnId", (req, res) => {
  * DELETE endpoint for removing a board
  */
 
-app.delete("/removeboard/:boardId", (req, res) => {
+app.delete("/deleteboard/:boardId", (req, res) => {
   const boardId = req.params["boardId"];
   Board.findById(boardId, (err, board) => {
     board.remove();
     res.status(200).json({
       message: "Board was removed successfully",
+    });
+  });
+});
+
+/**
+ * DELETE endpoint for removing a task
+ */
+
+app.delete("/deletetask/:taskId", (req, res) => {
+  const taskId = req.params[""];
+  Task.findById(taskId, (err, task) => {
+    task.remove();
+    res.status(200).json({
+      message: "Task was removed successfully",
     });
   });
 });
