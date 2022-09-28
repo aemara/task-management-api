@@ -267,6 +267,7 @@ app.put("/edittask/:taskId", async (req, res) => {
   task.title = req.body.newTitle;
   task.description = req.body.newDescription;
   task.subtasks = req.body.newSubtasks;
+  console.log('right before saving task');
   await task.save();
 
   if (req.body.newColumnId) {
@@ -284,11 +285,14 @@ app.put("/edittask/:taskId", async (req, res) => {
         Task.findOne({ _id: taskId }, (err, task) => {
           Column.findOne({ _id: req.body.newColumnId }, (err, column) => {
             column.tasks.push(task);
+            console.log('right before saving column');
             column.save();
           });
         });
       });
   }
+
+  console.log("right before response");
   res.status(200).json({
     message: "Task updated successfully",
   });
@@ -370,7 +374,7 @@ app.delete("/deleteboard/:boardId", (req, res) => {
  */
 
 app.delete("/deletetask/:taskId", (req, res) => {
-  const taskId = req.params[""];
+  const taskId = req.params["taskId"];
   Task.findById(taskId, (err, task) => {
     task.remove();
     res.status(200).json({
