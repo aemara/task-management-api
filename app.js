@@ -125,7 +125,7 @@ app.get("/board/:id", (req, res) => {
       .limit(1)
       .populate({
         path: "columns",
-        populate: { path: "tasks", populate: { path: "subtasks" } },
+        populate: { path: "tasks" },
       })
       .exec((err, board) => {
         res.status(200).json({
@@ -138,7 +138,7 @@ app.get("/board/:id", (req, res) => {
     Board.findById(req.params["id"])
       .populate({
         path: "columns",
-        populate: { path: "tasks", populate: { path: "subtasks" } },
+        populate: { path: "tasks" },
       })
       .exec((err, board) => {
         res.status(200).json({
@@ -265,7 +265,7 @@ app.put("/edittask/:taskId", async (req, res) => {
   task.title = req.body.newTitle;
   task.description = req.body.newDescription;
   task.subtasks = req.body.newSubtasks;
-  console.log('right before saving task');
+  console.log("right before saving task");
   await task.save();
 
   if (req.body.newColumnId) {
@@ -283,7 +283,7 @@ app.put("/edittask/:taskId", async (req, res) => {
         Task.findOne({ _id: taskId }, (err, task) => {
           Column.findOne({ _id: req.body.newColumnId }, (err, column) => {
             column.tasks.push(task);
-            console.log('right before saving column');
+            console.log("right before saving column");
             column.save();
           });
         });
