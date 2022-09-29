@@ -3,7 +3,6 @@ const { Column } = require("../models/column");
 
 module.exports = {
   addColumn: async (req, res) => {
-    console.log(`request to add column`);
     const boardId = req.params["boardId"];
     const column = new Column({
       title: req.body.title,
@@ -19,7 +18,6 @@ module.exports = {
   },
 
   getColumns: (req, res) => {
-    console.log(`request to get columns`);
     Board.findById(req.params["boardId"])
       .populate({
         path: "columns",
