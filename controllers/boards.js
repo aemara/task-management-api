@@ -34,7 +34,6 @@ module.exports = {
   },
 
   getBoard: (req, res) => {
-    console.log(`request`);
     if (req.params["id"] === "-1") {
       /**The following statement returns the last added board */
       Board.find()
