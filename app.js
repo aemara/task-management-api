@@ -1,6 +1,6 @@
 const cors = require("cors");
+const connectDB = require('./config/db');
 const express = require("express");
-const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const { Board } = require("./models/board");
 const { Column } = require("./models/column");
@@ -10,12 +10,8 @@ const { Subtask } = require("./models/subtask");
 const app = express();
 const port = 3000;
 
-mongoose
-  .connect(
-    "mongodb+srv://aemara:IboPx1f7PFeZOZxa@cluster0.tcsvd.mongodb.net/task-managment?retryWrites=true&w=majority"
-  )
-  .then(() => console.log("Database is connected."))
-  .catch(() => console.log("Connection failed."));
+require('dotenv').config({path: './config/.env'});
+connectDB();
 
 app.use(cors());
 app.use(bodyParser.json());
