@@ -65,32 +65,30 @@ module.exports = {
     }
   },
 
-  updateBoard: (req, res) => {
+  updateBoard: async (req, res) => {
     /**If there is a new board title */
     if (req.body.title) {
       const updatedBoard = { title: req.body.title };
-      Board.findByIdAndUpdate(req.params["id"], updatedBoard).exec();
+      await Board.findByIdAndUpdate(req.params["id"], updatedBoard).exec();
     }
 
-    req.body.columns.forEach((column) => {
+    for (var column of req.body.columns) {
+      console.log(`beginning of iteration`);
       if (!column.columnId) {
         const newColumn = new Column({ title: column.columnName });
-        newColumn.save();
-        Board.findById(req.params["id"], (err, board) => {
-          board.columns.push(newColumn);
-          board.save();
-        });
+        await newColumn.save();
+        const board = await Board.findById(req.params["id"]);
+        board.columns.push(newColumn);
+        await board.save();
       } else {
         const updatedColumn = { title: column.columnName };
-        Column.findByIdAndUpdate(column.columnId, updatedColumn);
+        await Column.findByIdAndUpdate(column.columnId, updatedColumn);
       }
-    });
+    }
 
     /**If there are columns to be deleted */
-    if (req.body.deletedColumns) {
-      req.body.deletedColumns.forEach((id) => {
-        Column.findByIdAndDelete(id).exec();
-      });
+    for (var id of req.body.deletedColumns) {
+      await Column.findByIdAndRemove(id).exec();
     }
 
     res.status(200).json({
