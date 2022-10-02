@@ -2,25 +2,24 @@ const { Board } = require("../models/board");
 const { Column } = require("../models/column");
 
 module.exports = {
-  addBoard: (req, res) => {
+  addBoard: async (req, res) => {
     const board = new Board({
       title: req.body.title,
     });
+    await board.save();
 
     if (req.body.columns) {
-      req.body.columns.forEach((column) => {
+      for (var column of req.body.columns) {
         const newColumn = new Column({ title: column.title });
-        newColumn.save().then((savedCol) => {
-          board.columns.push(savedCol);
-        });
-      });
+        await newColumn.save();
+        board.columns.push(newColumn);
+      }
     }
 
-    board.save((err, document) => {
-      res.status(200).json({
-        message: "A board was added successfully.",
-        boardId: document._id,
-      });
+    await board.save();
+    res.status(200).json({
+      message: "A board was added successfully.",
+      boardId: board._id,
     });
   },
 
@@ -66,18 +65,17 @@ module.exports = {
   },
 
   updateBoard: async (req, res) => {
+    const board = await Board.findById(req.params["id"]);
     /**If there is a new board title */
     if (req.body.title) {
-      const updatedBoard = { title: req.body.title };
-      await Board.findByIdAndUpdate(req.params["id"], updatedBoard).exec();
+      board.title = req.body.title;
+      await board.save();
     }
 
     for (var column of req.body.columns) {
-      console.log(`beginning of iteration`);
       if (!column.columnId) {
         const newColumn = new Column({ title: column.columnName });
         await newColumn.save();
-        const board = await Board.findById(req.params["id"]);
         board.columns.push(newColumn);
         await board.save();
       } else {
@@ -89,6 +87,11 @@ module.exports = {
     /**If there are columns to be deleted */
     for (var id of req.body.deletedColumns) {
       await Column.findByIdAndRemove(id).exec();
+      for (let i = 0; i < board.columns.length; i++) {
+        if (board.columns[i].toString() === id) {
+          board.columns.splice(i, 1);
+        }
+      }
     }
 
     res.status(200).json({
