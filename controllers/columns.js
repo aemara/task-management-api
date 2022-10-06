@@ -17,17 +17,21 @@ module.exports = {
     });
   },
 
-  getColumns: (req, res) => {
-    Board.findById(req.params["boardId"])
-      .populate({
+  getColumns: async (req, res) => {
+    try {
+      const board = await Board.findById(req.params["boardId"]).populate({
         path: "columns",
-      })
-      .exec((err, board) => {
-        res.status(200).json({
-          boardTitle: board.title,
-          columns: board.columns,
-        });
       });
+      res.status(200).json({
+        boardTitle: board.title,
+        columns: board.columns,
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(400).json({
+        message: "An error occured",
+      });
+    }
   },
 
   getColumn: (req, res) => {
