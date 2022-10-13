@@ -15,7 +15,7 @@ module.exports = {
     const subtaskId = req.params["subtaskId"];
     const taskId = req.params["taskId"];
 
-    const task = await Task.findOne({ _id: taskId });
+    const task = await Task.findOne({ _id: taskId }).exec();
     for (var subtask of task.subtasks) {
       if (subtask._id.toString() === subtaskId) {
         if (subtask.done) {
