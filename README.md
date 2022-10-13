@@ -14,3 +14,7 @@ Link to live project.
 I am currently in the process of adding authentication to the app. 
 
 # Project Screen Shots
+
+
+![](https://i.ibb.co/cQ8QwXy/Screen-Shot-2022-10-13-at-7-35-48-PM.png "a title")
+![](https://i.ibb.co/fCh0MTD/Screen-Shot-2022-10-13-at-7-35-59-PM.png "a title")
