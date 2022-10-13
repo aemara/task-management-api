@@ -7,7 +7,7 @@ Angular was used for the front-end of the application. NodeJS, Express, and Mong
 
 ## Live Project
 
-Link to live project.
+[Live Project](https://frello-task-management.vercel.app)
 
 ### Note on Usage
 You may experience a response delay of up to 30 seconds when requesting a board after a period of inactivity due to the fact the server is spun down after 15 minutes of inactivity. 
