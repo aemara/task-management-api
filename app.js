@@ -9,6 +9,7 @@ const boardsRoutes = require("./routes/boards");
 const columnsRoutes = require("./routes/columns");
 const tasksRoutes = require("./routes/tasks");
 const subtasksRoutes = require("./routes/subtasks");
+const authRoutes = require("./routes/auth");
 
 require("dotenv").config({ path: "./config/.env" });
 connectDB();
@@ -21,6 +22,7 @@ app.use("/boards", boardsRoutes);
 app.use("/columns", columnsRoutes);
 app.use("/tasks", tasksRoutes);
 app.use("/subtasks", subtasksRoutes);
+app.use("/auth", authRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`Server is running on port ${process.env.PORT}`);
