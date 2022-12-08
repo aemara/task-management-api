@@ -14,6 +14,16 @@ module.exports = {
         res.status(500).send({ message: err });
         return;
       }
+
+      const token = jwt.sign({ id: user._id }, process.env.SECRET, {
+        expiresIn: 86400,
+      });
+
+      res.status(200).send({
+        id: user._id,
+        username: user.username,
+        accessToken: token,
+      });
     });
   },
 
